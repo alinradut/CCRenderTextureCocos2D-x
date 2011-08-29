@@ -41,8 +41,19 @@ bool HelloWorld::init()
 
 	this->genBackground();
 	this->setIsTouchEnabled(true);
+	this->scheduleUpdate();
 	
 	return true;
+}
+
+void HelloWorld::update(cocos2d::ccTime dt)
+{
+	float PIXELS_PER_SECOND = 100;
+    static float offset = 0;
+    offset += PIXELS_PER_SECOND * dt;
+	
+    CCSize textureSize = _background->getTextureRect().size;
+	_background->setTextureRect(CCRectMake(offset, 0, textureSize.width, textureSize.height));
 }
 
 cocos2d::CCSprite* HelloWorld::spriteWithColor(ccColor4F bgColor, float textureSize)
@@ -128,6 +139,46 @@ cocos2d::CCSprite* HelloWorld::stripedSpriteWithColor1Color2(cocos2d::ccColor4F 
     glVertexPointer(2, GL_FLOAT, 0, vertices);
     glDrawArrays(GL_TRIANGLES, 0, (GLsizei)nVertices);
 	
+	// layer 2: gradient
+	glEnableClientState(GL_COLOR_ARRAY);
+	
+	float gradientAlpha = 0.7;    
+	ccColor4F colors[4];
+	nVertices = 0;
+	
+	vertices[nVertices] = CCPointMake(0, 0);
+	colors[nVertices++] = (ccColor4F){0, 0, 0, 0 };
+	vertices[nVertices] = CCPointMake(textureSize, 0);
+	colors[nVertices++] = (ccColor4F){0, 0, 0, 0};
+	vertices[nVertices] = CCPointMake(0, textureSize);
+	colors[nVertices++] = (ccColor4F){0, 0, 0, gradientAlpha};
+	vertices[nVertices] = CCPointMake(textureSize, textureSize);
+	colors[nVertices++] = (ccColor4F){0, 0, 0, gradientAlpha};
+	
+	glVertexPointer(2, GL_FLOAT, 0, vertices);
+	glColorPointer(4, GL_FLOAT, 0, colors);
+	glDrawArrays(GL_TRIANGLE_STRIP, 0, (GLsizei)nVertices);
+	
+	// layer 3: top highlight    
+	float borderWidth = textureSize/16;
+	float borderAlpha = 0.3f;
+	nVertices = 0;
+	
+	vertices[nVertices] = CCPointMake(0, 0);
+	colors[nVertices++] = (ccColor4F){1, 1, 1, borderAlpha};
+	vertices[nVertices] = CCPointMake(textureSize, 0);
+	colors[nVertices++] = (ccColor4F){1, 1, 1, borderAlpha};
+	
+	vertices[nVertices] = CCPointMake(0, borderWidth);
+	colors[nVertices++] = (ccColor4F){0, 0, 0, 0};
+	vertices[nVertices] = CCPointMake(textureSize, borderWidth);
+	colors[nVertices++] = (ccColor4F){0, 0, 0, 0};
+	
+	glVertexPointer(2, GL_FLOAT, 0, vertices);
+	glColorPointer(4, GL_FLOAT, 0, colors);
+	glBlendFunc(GL_DST_COLOR, GL_ONE_MINUS_SRC_ALPHA);
+	glDrawArrays(GL_TRIANGLE_STRIP, 0, (GLsizei)nVertices);
+	
     glEnableClientState(GL_COLOR_ARRAY);
     glEnableClientState(GL_TEXTURE_COORD_ARRAY);
     glEnable(GL_TEXTURE_2D);
@@ -182,6 +233,8 @@ void HelloWorld::genBackground()
 	CCSize winSize = CCDirector::sharedDirector()->getWinSize();
 	_background->setPosition(ccp(winSize.width/2, winSize.height/2));
 	
+	ccTexParams tp = {GL_LINEAR, GL_LINEAR, GL_REPEAT, GL_REPEAT};
+	_background->getTexture()->setTexParameters(&tp);
 	this->addChild(_background, -1);
 }
 
