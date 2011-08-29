@@ -25,6 +25,7 @@ public:
 	~HelloWorld();
 
 	cocos2d::CCSprite* spriteWithColor(cocos2d::ccColor4F bgColor, float textureSize);
+	cocos2d::CCSprite* stripedSpriteWithColor1Color2(cocos2d::ccColor4F c1, cocos2d::ccColor4F c2, float textureSize, int nStripes);
 	cocos2d::ccColor4F randomBrightColor();
 	void genBackground();
 	bool ccTouchBegan(cocos2d::CCTouch *touch, cocos2d::CCEvent *event);
